@@ -6,7 +6,8 @@ import {
     DELETE_POST, 
     CREATE_POST,
     SET_SINGLE_POST,
-    SUBMIT_COMMENTS
+    SUBMIT_COMMENTS,
+    DELETE_COMMENT
 } from '../types';
 
 const initialState = {
@@ -109,7 +110,24 @@ export default function(state=initialState, action){
                 singlePost: {
                     ...state.singlePost,
                     commentCount: newCommentCount,
-                    comments: newAddedCommentsArray
+                    comments: newAddedCommentsArray,
+                }
+            };
+
+        case DELETE_COMMENT:
+            let newRemovedCommentArray = [...state.singlePost.comments];
+            newRemovedCommentArray = newRemovedCommentArray.filter((comment) => comment.commentId !== action.payload.commentId);
+            let newCommentCountAfterRemoval = state.singlePost.commentCount - 1;
+            let removeCommentIndex = state.posts.findIndex((post) => post.postId === action.payload.postId);
+            let updatedPostsArrayAfterCommentRemoval = [...state.posts];
+            updatedPostsArrayAfterCommentRemoval[removeCommentIndex].commentCount = newCommentCountAfterRemoval;
+            return {
+                ...state,
+                posts: updatedPostsArrayAfterCommentRemoval,
+                singlePost: {
+                    ...state.singlePost,
+                    commentCount: newCommentCountAfterRemoval,
+                    comments: newRemovedCommentArray
                 }
             };
         

@@ -79,7 +79,11 @@ exports.getPost = (request, response) => {
          .then((data) => {
              postData.comments = [];
              data.forEach((doc) => {
-                 postData.comments.push(doc.data());
+                 let singleComment = {
+                     ...doc.data(),
+                     commentId: doc.id
+                 }
+                 postData.comments.push(singleComment);
              });
              return response.json(postData);
          })
@@ -125,7 +129,10 @@ exports.commentOnPost = (request, response) => {
                          .add(newComment);
             })
             .then((docs) => {
-                     response.json(newComment);
+                     response.json({
+                         ...newComment,
+                         commentId: docs.id
+                     });
             })
             .catch(err => {
                 console.error(err);
@@ -265,3 +272,41 @@ exports.deletePost = (request, response) => {
                 response.status(500).json({error: err.code});
             });
 };
+
+
+exports.deleteComment = (request, response) => {
+    const commentDocument = admin.firestore()
+                          .collection('comments')
+                          .doc(request.params.commentId);
+    const postDocument = admin.firestore()
+                              .collection('Posts')
+                              .doc(request.params.postId);
+    commentDocument.get()
+                   .then(doc => {
+                       if(!doc.exists){
+                           return response.status(404).json({ error: "Comment Not Found"});
+                       }
+                       else if(doc.data().userHandle !== request.user.handle){
+                           return response.status(403).json({ error: "Unauthorized" });
+                       }
+                       else{
+                           commentDocument.delete();
+                           return postDocument.get()
+                            .then((doc) => {
+                                      if(!doc.exists){
+                                          return response.status(404).json({ error: "Post not Found" });
+                                      }
+                                      let postData = doc.data();
+                                      postData.commentCount--;
+                                      return postDocument.update({ commentCount: postData.commentCount });
+                              })
+                              .then(() => {
+                                  return response.json({message: "Comment deleted Successfully"});
+                              })
+                       }
+                   })
+                   .catch(err => {
+                       console.error(err);
+                       return response.status(500).json({error: err.code});
+                   });
+}

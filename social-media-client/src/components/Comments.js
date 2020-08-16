@@ -4,6 +4,8 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { connect } from 'react-redux';
+import DeleteComment from './DeleteComment';
 
 
 const styles = {
@@ -31,11 +33,19 @@ const styles = {
 
 class Comments extends Component {
     render() {
-        const { comments, classes } = this.props;
+        const { 
+            comments, 
+            classes,
+            user: {
+                credentials:{
+                    handle
+                }
+            }
+        } = this.props;
         return (
             <Grid container>
                 {comments.map((comment, index) => {
-                    const { body, createdAt, userHandle, userImage} = comment;
+                    const { body, createdAt, userHandle, userImage, commentId } = comment;
                     return (
                         <Fragment key={createdAt} >
                             <Grid item sm={10}>
@@ -64,7 +74,10 @@ class Comments extends Component {
                                             </Typography>
                                             <hr className={classes.invisibleSeperator} />
                                             <Typography variant="body1">{body}</Typography>
-
+                                            {handle === userHandle ? (
+                                                <DeleteComment commentId={commentId} />
+                                            ):null
+                                            }
                                         </div>
                                     </Grid>
                                 </Grid>
@@ -83,4 +96,10 @@ class Comments extends Component {
     }
 }
 
-export default withStyles(styles)(Comments);
+const mapStateToProps = (state) => ({
+    user: state.user
+});
+
+const mapActionsToProps = {};
+
+export default connect(mapStateToProps, mapActionsToProps)(withStyles(styles)(Comments));

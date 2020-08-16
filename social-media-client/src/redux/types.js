@@ -22,3 +22,4 @@ export const DELETE_POST = "DELETE_POST";
 export const CREATE_POST = "CREATE_POST";
 export const SET_SINGLE_POST = "SET_SINGLE_POST";
 export const SUBMIT_COMMENTS = "SUBMIT_COMMENTS";
+export const DELETE_COMMENT = "DELETE_COMMENT";

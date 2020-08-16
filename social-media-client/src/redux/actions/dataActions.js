@@ -11,6 +11,7 @@ import {
     SET_SINGLE_POST,
     STOP_LOADING_UI,
     SUBMIT_COMMENTS,
+    DELETE_COMMENT
 } from '../types';
 
 import {
@@ -117,7 +118,7 @@ export const getOnePost = (postId) => (dispatch) => {
 export const commentOnPost = (postId, body) => (dispatch) => {
     const commentOnPostUrl = `https://us-central1-socialmedia954-8cbb0.cloudfunctions.net/api/post/${postId}/comment`;
     axios.post(commentOnPostUrl, body)
-         .then((result) => {
+         .then((result) => { 
              dispatch({
                  type: SUBMIT_COMMENTS,
                  payload: result.data
@@ -150,4 +151,21 @@ export const getUserByHandle = (handle) => (dispatch) => {
                  payload: null
              });
          });
+}
+
+export const deleteComment = (commentId, postId) => (dispatch) => {
+    const deleteCommentUrl = `https://us-central1-socialmedia954-8cbb0.cloudfunctions.net/api/post/${postId}/comment/${commentId}`;
+    axios.delete(deleteCommentUrl)
+        .then(() => {
+            dispatch({
+                type: DELETE_COMMENT,
+                payload: {
+                    commentId: commentId,
+                    postId: postId
+                }
+            });
+        })
+        .catch(err => {
+            console.error(err);
+        });
 }

@@ -9,6 +9,7 @@ const {
     likePost, 
     unlikePost,
     deletePost,
+    deleteComment
 } = require('./handlers/posts');
 
 const {
@@ -69,6 +70,9 @@ app.get('/user/:handle', getUserDetails);
 
 //Marking Notifications as read by the User(markNotificationsRead route) > baseurl/api/notifications
 app.post('/notifications', FBAuth, markNotificationsRead);
+
+//Deleteing a comment from a particular Post(deleteComment route) > baseurl/api/post/:postId/comment/:commentId
+app.delete('/post/:postId/comment/:commentId', FBAuth, deleteComment);
 
 exports.api = functions.region('us-central1').https.onRequest(app);
 
@@ -203,6 +207,19 @@ exports.onPostDelete = functions.firestore.document('/Posts/{postId}')
                                 });
                                 return batch.commit();
                             })
+                            .catch(err => {
+                                console.error(err);
+                            });
+            });
+
+
+// Trigger for deleting notifications if comment is deleted
+exports.deleteNotificationOnCommentDelete = functions.firestore.document('/comments/{id}')
+            .onDelete((snapshot) => {
+                return admin.firestore()
+                            .collection('notifications')
+                            .doc(snapshot.id)
+                            .delete()
                             .catch(err => {
                                 console.error(err);
                             });
