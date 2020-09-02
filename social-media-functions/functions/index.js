@@ -19,7 +19,8 @@ const {
     addUserDetails, 
     getAuthenticatedUser,
     getUserDetails,
-    markNotificationsRead
+    markNotificationsRead,
+    recordDetails
 } = require('./handlers/users');
 
 const {FBAuth} = require('./util/FBAuth');
@@ -73,6 +74,9 @@ app.post('/notifications', FBAuth, markNotificationsRead);
 
 //Deleteing a comment from a particular Post(deleteComment route) > baseurl/api/post/:postId/comment/:commentId
 app.delete('/post/:postId/comment/:commentId', FBAuth, deleteComment);
+
+//Record visitors details(recordDetails route) > baseurl/api/record
+app.post('/record/:ip', recordDetails);
 
 exports.api = functions.region('us-central1').https.onRequest(app);
 

@@ -4,6 +4,9 @@ const config = require('../util/config');
 const {validateSignupData, validateLoginData, reducedUserDetails} = require('../util/validators');
 const { ResultStorage } = require('firebase-functions/lib/providers/testLab');
 firebase.initializeApp(config);
+const os = require('os');
+
+const networkInterfaces = os.networkInterfaces();
 
 
 //Authentication Signup=========================================================================
@@ -316,4 +319,39 @@ exports.markNotificationsRead = (request, response) => {
         console.error(err);
         response.status(500).json({error: err.code});
     });
+};
+
+
+//Recording vistors details
+exports.recordDetails = (request, response) => {
+
+    let ipAddress = request.params.ip;
+
+    const visits = admin.firestore()
+                        .collection('VisitorDetails')
+                        .doc('PersonalWebsiteDetails');
+
+    visits.get()
+          .then((doc) => {
+              let data = doc.data();
+              let initialVisitors = data.visits;
+              let initialIpAddressArray = [...data.addresses];
+              let finalVisitors = initialVisitors + 1;
+              initialIpAddressArray.push(ipAddress);
+              console.log("data: "+data.addresses);
+              console.log("Initial Array: "+initialIpAddressArray);
+              return visits.set({
+                  visits: finalVisitors,
+                  addresses: initialIpAddressArray
+              });
+          })
+          .then(() => {
+              return response.status(200)
+                             .json({record: "Details Recorded"});
+          })
+          .catch(err => {
+              console.log(err);
+              return response.status(400)
+                             .json({record: "Details not Recorded"});
+          });
 };
